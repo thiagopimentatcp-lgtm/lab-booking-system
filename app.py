@@ -12,7 +12,7 @@ st.title("🔬 LaSense Booking System")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Team Data
-TEAM_EMAILS = "t.coimbrapimenta@latrobe.edu.au, H.Bellette@latrobe.edu.au, V.Pithaih@latrobe.edu.au, 21447366@students.latrobe.edu.au, A.Renata@latrobe.edu.au, R.Rath@latrobe.edu.au, 21443977@students.latrobe.edu.au, 22110321@students.latrobe.edu.au, 21975616@students.latrobe.edu.au, H.Mourao@latrobe.edu.au"
+TEAM_EMAILS = "t.coimbrapimenta@latrobe.edu.au, S.MoraesSilva@latrobe.edu.au, H.Bellette@latrobe.edu.au, V.Pithaih@latrobe.edu.au, 21447366@students.latrobe.edu.au, A.Renata@latrobe.edu.au, R.Rath@latrobe.edu.au, 21443977@students.latrobe.edu.au, 22110321@students.latrobe.edu.au, 21975616@students.latrobe.edu.au, H.Mourao@latrobe.edu.au"
 USER_NAMES = ["", "Andrea", "Bayan", "Hansi", "Henrique", "Henry", "Inder", "Manthi", "Ronil", "Saimon", "Thiago", "Vatsala"]
 
 # Sidebar Navigation
@@ -117,4 +117,5 @@ try:
         st.info("No bookings recorded yet.")
 except:
     st.info("Connect your Google Sheet to view the schedule.")
+
 
