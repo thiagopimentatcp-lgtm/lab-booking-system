@@ -28,7 +28,7 @@ if action == "Book Equipment":
         with st.form("booking_form", clear_on_submit=True):
             # NEW: Dropdown for User Names
             selected_user = st.selectbox("Who is Booking?", USER_NAMES)
-            equipment = st.selectbox("Potentiostat", ["Dropsens (Old)", "PalmSens (New)"])
+            equipment = st.selectbox("Potentiostat", ["", "Dropsens (Old)", "PalmSens (New)"])
             booking_date = st.date_input("Date", min_value=datetime.today())
             
             col1, col2 = st.columns(2)
@@ -117,5 +117,6 @@ try:
         st.info("No bookings recorded yet.")
 except:
     st.info("Connect your Google Sheet to view the schedule.")
+
 
 
