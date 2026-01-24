@@ -91,16 +91,29 @@ elif action == "Cancel a Booking":
     try:
         df = get_data()
         if df is not None and not df.empty:
-            # Create a selection string for the dropdown
-            df['Selection'] = df['User'] + " | " + df['Equipment'] + " | " + df['Date']
-            to_delete = st.sidebar.selectbox("Select your booking to remove:", df['Selection'].tolist())
+            # Dropdown for the user to identify themselves
+            cancelling_user = st.sidebar.selectbox("Confirm Your Name", USER_NAMES)
             
-            if st.sidebar.button("❌ Remove Booking"):
-                # Filter out the selected row and save back
-                df_new = df[df['Selection'] != to_delete].drop(columns=['Selection'])
-                conn.update(data=df_new)
-                st.success("Booking successfully removed.")
-                st.rerun()
+            # Filter the list to show ONLY bookings belonging to that user
+            user_bookings = df[df['User'] == cancelling_user]
+            
+            if not user_bookings.empty:
+                user_bookings['Selection'] = user_bookings['Equipment'] + " | " + user_bookings['Date'] + " | " + user_bookings['Start Time']
+                to_delete = st.sidebar.selectbox("Select your booking to remove:", user_bookings['Selection'].tolist())
+                
+                if st.sidebar.button("❌ Remove My Booking"):
+                    # Find the original row in the main dataframe and remove it
+                    # We match based on User and the specific Selection strings
+                    df['MatchKey'] = df['User'] + " | " + df['Equipment'] + " | " + df['Date'] + " | " + df['Start Time']
+                    current_key = cancelling_user + " | " + to_delete
+                    
+                    df_new = df[df['MatchKey'] != current_key].drop(columns=['MatchKey'])
+                    
+                    conn.update(data=df_new)
+                    st.success("Booking successfully removed.")
+                    st.rerun()
+            else:
+                st.sidebar.warning(f"No bookings found under the name '{cancelling_user}'.")
         else:
             st.sidebar.info("The schedule is currently empty.")
     except Exception as e:
@@ -117,6 +130,7 @@ try:
         st.info("No bookings recorded yet.")
 except:
     st.info("Connect your Google Sheet to view the schedule.")
+
 
 
 
