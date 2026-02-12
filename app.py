@@ -6,6 +6,9 @@ import urllib.parse
 
 st.set_page_config(page_title="Lab Booking - SABE", page_icon="🔬")
 
+# Logo
+st.sidebar.image("lasense.png", use_container_width=True)
+
 st.title("🔬 LaSense Booking System")
 
 # Connection to Google Sheets
@@ -140,6 +143,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
