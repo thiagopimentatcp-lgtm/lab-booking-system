@@ -8,9 +8,6 @@ st.set_page_config(page_title="Lab Booking - SABE", page_icon="🔬")
 
 st.title("🔬 LaSense Booking System")
 
-# Logo
-st.sidebar.image("lasense.PNG", use_container_width=True)
-
 # Connection to Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -143,6 +140,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
