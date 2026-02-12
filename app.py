@@ -119,17 +119,28 @@ elif action == "Cancel a Booking":
     except Exception as e:
         st.error(f"Error reading data: {e}")
 
-# --- Display Current Schedule ---
-st.subheader("📅 Current Lab Schedule")
+# --- FILTERED DISPLAY ---
+st.subheader("📅 Upcoming Lab Schedule")
 try:
-    df_view = get_data()
-    if df_view is not None and not df_view.empty:
-        # Sort by date descending for better visibility
-        st.dataframe(df_view.sort_values(by="Date", ascending=False), use_container_width=True, hide_index=True)
+    df_all = get_data()
+    if df_all is not None and not df_all.empty:
+        # Convert to datetime objects for filtering
+        df_all['Date_obj'] = pd.to_datetime(df_all['Date'])
+        today = datetime.combine(datetime.today(), time.min)
+        
+        # Filter: Only keep rows where Date is today or later
+        df_upcoming = df_all[df_all['Date_obj'] >= today].copy()
+        df_upcoming = df_upcoming.drop(columns=['Date_obj'])
+        
+        if not df_upcoming.empty:
+            st.dataframe(df_upcoming.sort_values(by=["Date", "Start Time"]), use_container_width=True, hide_index=True)
+        else:
+            st.info("No upcoming bookings. The lab is free!")
     else:
         st.info("No bookings recorded yet.")
-except:
-    st.info("Connect your Google Sheet to view the schedule.")
+except Exception as e:
+    st.error(f"Could not load schedule: {e}")
+
 
 
 
