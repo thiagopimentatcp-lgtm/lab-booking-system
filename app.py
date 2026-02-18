@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-from pandas as pd
 from datetime import datetime, time
 import pytz #For Melbourbe timezone
 import urllib.parse
@@ -135,6 +134,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
