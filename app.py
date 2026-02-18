@@ -94,33 +94,35 @@ elif action == "Cancel a Booking":
     try:
         df = get_data()
         if df is not None and not df.empty:
-            # Dropdown for the user to identify themselves
-            cancelling_user = st.sidebar.selectbox("Confirm Your Name", USER_NAMES)
+            cancelling_user = st.sidebar.selectbox("Confirm Your Identity", USER_NAMES)
             
-            # Filter the list to show ONLY bookings belonging to that user
-            user_bookings = df[df['User'] == cancelling_user]
+            # Get today's date in string format for comparison
+            today_str = datetime.today().strftime('%Y-%m-%d')
             
-            if not user_bookings.empty:
-                user_bookings['Selection'] = user_bookings['Equipment'] + " | " + user_bookings['Date'] + " | " + user_bookings['Start Time']
-                to_delete = st.sidebar.selectbox("Select your booking to remove:", user_bookings['Selection'].tolist())
+            # Filter: Only show bookings where User matches AND Date is today or in the future
+            my_actual_bookings = df[
+                (df['User'] == cancelling_user) & 
+                (df['Date'] >= today_str)
+            ]
+            
+            if not my_actual_bookings.empty:
+                my_actual_bookings['Selection'] = my_actual_bookings['Equipment'] + " | " + my_actual_bookings['Date'] + " | " + my_actual_bookings['Start Time']
+                to_remove = st.sidebar.selectbox("Select CURRENT booking to remove:", my_actual_bookings['Selection'].tolist())
                 
                 if st.sidebar.button("❌ Remove My Booking"):
-                    # Find the original row in the main dataframe and remove it
-                    # We match based on User and the specific Selection strings
                     df['MatchKey'] = df['User'] + " | " + df['Equipment'] + " | " + df['Date'] + " | " + df['Start Time']
-                    current_key = cancelling_user + " | " + to_delete
+                    current_key = cancelling_user + " | " + to_remove
                     
                     df_new = df[df['MatchKey'] != current_key].drop(columns=['MatchKey'])
-                    
                     conn.update(data=df_new)
-                    st.success("Booking successfully removed.")
+                    st.success("Booking removed.")
                     st.rerun()
             else:
-                st.sidebar.warning(f"No bookings found under the name '{cancelling_user}'.")
+                st.sidebar.warning(f"No current or future bookings found for {cancelling_user}.")
         else:
-            st.sidebar.info("The schedule is currently empty.")
+            st.sidebar.info("The schedule is empty.")
     except Exception as e:
-        st.error(f"Error reading data: {e}")
+        st.error(f"Error: {e}")
 
 # --- FILTERED DISPLAY ---
 st.subheader("📅 Upcoming Lab Schedule")
@@ -143,6 +145,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
