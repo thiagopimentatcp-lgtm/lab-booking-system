@@ -1,7 +1,9 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+from pandas as pd
 from datetime import datetime, time
+import pytz #For Melbourbe timezone
 import urllib.parse
 
 st.set_page_config(page_title="Lab Booking - SABE", page_icon="🔬")
@@ -31,8 +33,8 @@ if action == "Book Equipment":
         st.header("New Booking")
         with st.form("booking_form", clear_on_submit=True):
             selected_user = st.selectbox("Select Your Name", USER_NAMES)
-            equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat"])
-            booking_date = st.date_input("Date", min_value=datetime.today())
+            equipment = st.selectbox("Equipment", ["Potentiostat", "SPR", "Microscope", "Centrifuge"])
+            booking_date = st.date_input("Date", min_value=current_date_melb)
             
             col1, col2 = st.columns(2)
             start_t = col1.time_input("Start Time", value=time(9, 0))
@@ -42,15 +44,11 @@ if action == "Book Equipment":
 
     if submit_button:
         try:
-            # --- NEW: TIME VALIDATION ---
-            now = datetime.now()
-            current_date = now.date()
-            current_time = now.time()
-
-            if booking_date == current_date and start_t < current_time:
-                st.error(f"❌ You cannot book a time in the past! It is currently {current_time.strftime('%H:%M')}.")
+            # STRICT TIMEZONE VALIDATION
+            if booking_date == current_date_melb and start_t < current_time_melb:
+                st.error(f"❌ Past Time Error: It is currently {current_time_melb.strftime('%H:%M')} in Melbourne. You cannot book 9:00 AM.")
             elif start_t >= end_t:
-                st.error("❌ End Time must be after Start Time.")
+                st.error("❌ Logic Error: End Time must be after Start Time.")
             else:
                 df = get_data()
                 if df is None: df = pd.DataFrame(columns=["Equipment", "Date", "Start Time", "End Time", "User"])
@@ -71,9 +69,10 @@ if action == "Book Equipment":
                     new_entry = pd.DataFrame([{"Equipment": equipment, "Date": str(booking_date), "Start Time": str(start_t), "End Time": str(end_t), "User": selected_user}])
                     updated_df = pd.concat([df, new_entry], ignore_index=True)
                     conn.update(data=updated_df)
-                    st.success(f"✅ Success! {equipment} booked.")
+                    st.success(f"✅ Success! {equipment} booked for {selected_user}.")
                     st.balloons()
                     
+                    # Email Notification
                     subject = urllib.parse.quote(f"Lab Booking: {equipment}")
                     body = urllib.parse.quote(f"Hi team, I booked {equipment} for {booking_date} from {start_t} to {end_t}.")
                     st.markdown(f'<a href="mailto:{TEAM_EMAILS}?subject={subject}&body={body}" target="_blank"><button style="background-color: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">📧 Notify Team via Email</button></a>', unsafe_allow_html=True)
@@ -136,6 +135,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
