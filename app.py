@@ -25,13 +25,13 @@ action = st.sidebar.radio("Menu", ["Book Equipment", "Cancel a Booking"])
 def get_data():
     return conn.read(ttl=0) # ttl=0 prevents using old cached data
 
+# --- BOOKING SECTION ---
 if action == "Book Equipment":
     with st.sidebar:
         st.header("New Booking")
         with st.form("booking_form", clear_on_submit=True):
-            # NEW: Dropdown for User Names
-            selected_user = st.selectbox("Who is Booking?", USER_NAMES)
-            equipment = st.selectbox("Potentiostat", ["", "Dropsens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat"])
+            selected_user = st.selectbox("Select Your Name", USER_NAMES)
+            equipment = st.selectbox("Equipment", ["Potentiostat", "SPR", "Microscope", "Centrifuge"])
             booking_date = st.date_input("Date", min_value=datetime.today())
             
             col1, col2 = st.columns(2)
@@ -42,52 +42,43 @@ if action == "Book Equipment":
 
     if submit_button:
         try:
-            # 1. Fetch current data to ensure we append and don't overwrite
-            df = get_data()
-            if df is None: df = pd.DataFrame(columns=["Equipment", "Date", "Start Time", "End Time", "User"])
-            
-            # 2. Format columns for comparison
-            if not df.empty:
+            # --- NEW: TIME VALIDATION ---
+            now = datetime.now()
+            current_date = now.date()
+            current_time = now.time()
+
+            if booking_date == current_date and start_t < current_time:
+                st.error(f"❌ You cannot book a time in the past! It is currently {current_time.strftime('%H:%M')}.")
+            elif start_t >= end_t:
+                st.error("❌ End Time must be after Start Time.")
+            else:
+                df = get_data()
+                if df is None: df = pd.DataFrame(columns=["Equipment", "Date", "Start Time", "End Time", "User"])
+                
                 df['Date'] = df['Date'].astype(str)
-                df['Start Time'] = df['Start Time'].astype(str)
-                df['End Time'] = df['End Time'].astype(str)
-            
-            # 3. Conflict Check Logic
-            is_conflict = False
-            if not df.empty:
                 conflicts = df[(df["Equipment"] == equipment) & (df["Date"] == str(booking_date))]
+                
+                is_conflict = False
                 for _, row in conflicts.iterrows():
-                    # Check if times overlap: (StartA < EndB) and (EndA > StartB)
-                    if (str(start_t) < row["End Time"]) and (str(end_t) > row["Start Time"]):
+                    if (str(start_t) < str(row["End Time"])) and (str(end_t) > str(row["Start Time"])):
                         is_conflict = True
                         existing_user = row["User"]
                         break
-            
-            if is_conflict:
-                st.error(f"❌ Conflict! This slot is already booked by **{existing_user}**.")
-            else:
-                # 4. Prepare new row and append to existing data
-                new_entry = pd.DataFrame([{
-                    "Equipment": equipment, 
-                    "Date": str(booking_date), 
-                    "Start Time": str(start_t), 
-                    "End Time": str(end_t), 
-                    "User": selected_user
-                }])
                 
-                updated_df = pd.concat([df, new_entry], ignore_index=True)
-                
-                # 5. Push updated full dataframe back to Google Sheets
-                conn.update(data=updated_df)
-                st.success(f"✅ Success! {equipment} has been booked for {selected_user}.")
-                st.balloons()
-                
-                # Notification Email Link
-                subject = urllib.parse.quote(f"Lab Booking: {equipment}")
-                body = urllib.parse.quote(f"Hi team, I have booked {equipment} for {booking_date} from {start_t} to {end_t}.")
-                st.markdown(f'<a href="mailto:{TEAM_EMAILS}?subject={subject}&body={body}" target="_blank"><button style="background-color: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">📧 Notify Team via Email</button></a>', unsafe_allow_html=True)
+                if is_conflict:
+                    st.error(f"❌ Conflict! Slot taken by **{existing_user}**.")
+                else:
+                    new_entry = pd.DataFrame([{"Equipment": equipment, "Date": str(booking_date), "Start Time": str(start_t), "End Time": str(end_t), "User": selected_user}])
+                    updated_df = pd.concat([df, new_entry], ignore_index=True)
+                    conn.update(data=updated_df)
+                    st.success(f"✅ Success! {equipment} booked.")
+                    st.balloons()
+                    
+                    subject = urllib.parse.quote(f"Lab Booking: {equipment}")
+                    body = urllib.parse.quote(f"Hi team, I booked {equipment} for {booking_date} from {start_t} to {end_t}.")
+                    st.markdown(f'<a href="mailto:{TEAM_EMAILS}?subject={subject}&body={body}" target="_blank"><button style="background-color: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">📧 Notify Team via Email</button></a>', unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Database error: {e}")
+            st.error(f"Error: {e}")
 
 elif action == "Cancel a Booking":
     st.sidebar.header("Cancel Booking")
@@ -145,6 +136,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
