@@ -31,7 +31,7 @@ if action == "Book Equipment":
         st.header("New Booking")
         with st.form("booking_form", clear_on_submit=True):
             selected_user = st.selectbox("Select Your Name", USER_NAMES)
-            equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", Portable Pstat])
+            equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat"])
             booking_date = st.date_input("Date", min_value=datetime.today())
             
             col1, col2 = st.columns(2)
@@ -136,6 +136,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
