@@ -12,6 +12,12 @@ st.title("🔬 LaSense Booking System")
 # Logo
 st.sidebar.image("lasense.PNG", use_container_width=True)
 
+# 2. Melbourne Timezone Initialization (Fixed NameError)
+melb_tz = pytz.timezone('Australia/Melbourne')
+now_melb = datetime.now(melb_tz)
+current_date_melb = now_melb.date()
+current_time_melb = now_melb.time()
+
 # Connection to Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -33,6 +39,7 @@ if action == "Book Equipment":
         with st.form("booking_form", clear_on_submit=True):
             selected_user = st.selectbox("Select Your Name", USER_NAMES)
             equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat"])
+            # The min_value is now correctly referenced here
             booking_date = st.date_input("Date", min_value=current_date_melb)
             
             col1, col2 = st.columns(2)
@@ -43,9 +50,9 @@ if action == "Book Equipment":
 
     if submit_button:
         try:
-            # STRICT TIMEZONE VALIDATION
+            # STRICT MELBOURNE TIME VALIDATION
             if booking_date == current_date_melb and start_t < current_time_melb:
-                st.error(f"❌ Past Time Error: It is currently {current_time_melb.strftime('%H:%M')} in Melbourne. You cannot book 9:00 AM.")
+                st.error(f"❌ Past Time Error: It is currently {current_time_melb.strftime('%H:%M')} in Melbourne.")
             elif start_t >= end_t:
                 st.error("❌ Logic Error: End Time must be after Start Time.")
             else:
@@ -71,12 +78,13 @@ if action == "Book Equipment":
                     st.success(f"✅ Success! {equipment} booked for {selected_user}.")
                     st.balloons()
                     
-                    # Email Notification
+                    # Email Link
                     subject = urllib.parse.quote(f"Lab Booking: {equipment}")
                     body = urllib.parse.quote(f"Hi team, I booked {equipment} for {booking_date} from {start_t} to {end_t}.")
                     st.markdown(f'<a href="mailto:{TEAM_EMAILS}?subject={subject}&body={body}" target="_blank"><button style="background-color: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">📧 Notify Team via Email</button></a>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error: {e}")
+                        
 
 elif action == "Cancel a Booking":
     st.sidebar.header("Cancel Booking")
@@ -134,6 +142,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
