@@ -38,7 +38,7 @@ if action == "Book Equipment":
         st.header("New Booking")
         with st.form("booking_form", clear_on_submit=True):
             selected_user = st.selectbox("Select Your Name", USER_NAMES)
-            equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat"])
+            equipment = st.selectbox("Equipment", ["", "DropSens (Old)", "PalmSens (4 Channels)", "PalmSens (8 Channels)", "Portable Pstat (1 Channel)"])
             # The min_value is now correctly referenced here
             booking_date = st.date_input("Date", min_value=current_date_melb)
             
@@ -142,6 +142,7 @@ try:
         st.info("No bookings recorded yet.")
 except Exception as e:
     st.error(f"Could not load schedule: {e}")
+
 
 
 
