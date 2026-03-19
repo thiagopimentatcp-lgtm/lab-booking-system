@@ -23,7 +23,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Team Data
 TEAM_EMAILS = "t.coimbrapimenta@latrobe.edu.au, 21957653@students.latrobe.edu.au, 22880912@students.latrobe.edu.au, d.langley@latrobe.edu.au, S.MoraesSilva@latrobe.edu.au, H.Bellette@latrobe.edu.au, V.Pithaih@latrobe.edu.au, 21447366@students.latrobe.edu.au, A.Renata@latrobe.edu.au, R.Rath@latrobe.edu.au, 21443977@students.latrobe.edu.au, 22110321@students.latrobe.edu.au, 21975616@students.latrobe.edu.au, H.Mourao@latrobe.edu.au"
-USER_NAMES = ["", "Andrea", ""Ashab", "Bayan", "Daniel", "Hansi", "Henrique", "Henry", "Inder", "Manthi", "Ronil", "Saimon", "Thiago", ""Thien", "Vatsala"]
+USER_NAMES = ["", "Andrea", "Ashab", "Bayan", "Daniel", "Hansi", "Henrique", "Henry", "Inder", "Manthi", "Ronil", "Saimon", "Thiago", "Thien", "Vatsala"]
 
 # Sidebar Navigation
 action = st.sidebar.radio("Menu", ["Book Equipment", "Cancel a Booking"])
